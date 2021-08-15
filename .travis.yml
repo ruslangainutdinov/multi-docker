@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t ruslangainutdinov7/client-test -f ./client/Dockerfile.dev ./client
+
+script: # if any of the scripts below are exits with non-zero status travis CI will failed
+  - docker run -e CI=true ruslangainutdinov7/client-test npm test
+
+after_success:
+  - docker build -t ruslangainutdinov7/multi-client ./client/.
+  - docker build -t ruslangainutdinov7/multi-nginx ./nginx/.
+  - docker build -t ruslangainutdinov7/multi-server ./server
+  - docker build -t ruslangainutdinov7/multi-worker ./worker
+  # Take images and push to docker.hub
+  - docker login -u "$DOCKER_ID" -p "$DOCKER_PASSWORD" 
+  # - echo "#"
+  - docker push ruslangainutdinov7/multi-client
+  - docker push ruslangainutdinov7/multi-nginx
+  - docker push ruslangainutdinov7/multi-server
+  - docker push ruslangainutdinov7/multi-worker
