@@ -15,8 +15,22 @@ after_success:
   - docker build -t ruslangainutdinov7/multi-worker ./worker
   # Take images and push to docker.hub
   - docker login -u "$DOCKER_ID" -p "$DOCKER_PASSWORD" 
-  # - echo "#"
+  # Alternative cmd to login, 'echo "$DOCKER_PASSWORD"' enter the vallue of DOCKER_PASSWORD variable into after next cmd completed
+  # - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
   - docker push ruslangainutdinov7/multi-client
   - docker push ruslangainutdinov7/multi-nginx
   - docker push ruslangainutdinov7/multi-server
   - docker push ruslangainutdinov7/multi-worker
+
+deploy:
+  provider: elasticbeanstalk #travis-ci already has preconfigured provider values, in this case elasticbeanstalk
+  region: "us-east-2" # region from AWS url instance
+  app: "multi-docker" # application name in AWS
+  env: "Multidocker-env" # environment name
+  bucket_name: "elasticbeanstalk-us-east-2-473521662465" # target S3 bucket, place where to put application ; it is automatically created in S3 service when we create our app for the first time
+  bucket_path: "multi-docker" #app name; directory where it should be uploaded
+  on:         
+    branch: master  # every time we push our code to master, that's when travis-ci will deploy
+# To permit travis-ci to deploy code to elastic we must configure "Users" in IAM service
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
